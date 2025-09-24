@@ -14,6 +14,7 @@ import {
   PointElement,
   LineElement,
   ArcElement,
+  ChartOptions,
 } from "chart.js";
 import { Bar, Line, Pie } from "react-chartjs-2";
 import ChartDataLabels from "chartjs-plugin-datalabels";
@@ -50,7 +51,6 @@ export default function Page() {
   const onFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (!f) return;
-
     setStatus("Lendo arquivo…");
     const reader = new FileReader();
     reader.onload = (ev: ProgressEvent<FileReader>) => {
@@ -84,7 +84,7 @@ export default function Page() {
         const combined=[...map.values()].sort((a,b)=>a.Usuario.localeCompare(b.Usuario)||a.Hora-b.Hora);
         setRows(combined);
         setStatus(`Arquivo processado ✓ (${combined.length} registros)`);
-      } catch(err: unknown){
+      } catch {
         setStatus("Erro ao processar arquivo");
       }
     };
@@ -189,13 +189,13 @@ function Card({title,children}:{title:string;children:React.ReactNode}){
 }
 
 /* Chart options */
-function barOptions(){
+function barOptions(): ChartOptions<"bar"> {
   return {
     responsive:true, maintainAspectRatio:false,
     plugins:{
-      legend:{position:"top"},
+      legend:{position:"top" as const},
       datalabels:{
-        color:"#111", anchor:"end" as const, align:"top" as const,
+        color:"#111", anchor:"end", align:"top",
         backgroundColor:"rgba(255,255,255,0.8)", borderRadius:4, padding:3,
         formatter:(v:number)=>v.toLocaleString("pt-BR")
       }
@@ -203,13 +203,13 @@ function barOptions(){
     scales:{y:{beginAtZero:true, grid:{color:PALETTE.grid}}}
   };
 }
-function lineOptions(){
+function lineOptions(): ChartOptions<"line"> {
   return {
     responsive:true, maintainAspectRatio:false,
     plugins:{
-      legend:{position:"top"},
+      legend:{position:"top" as const},
       datalabels:{
-        color:"#111", align:"top" as const,
+        color:"#111", align:"top",
         backgroundColor:"rgba(255,255,255,0.8)", borderRadius:4, padding:3,
         formatter:(v:number)=>v.toLocaleString("pt-BR")
       }
@@ -217,16 +217,15 @@ function lineOptions(){
     scales:{y:{beginAtZero:true, grid:{color:PALETTE.grid}}}
   };
 }
-function pieOptions(){
+function pieOptions(): ChartOptions<"pie"> {
   return {
     plugins:{
-      legend:{position:"right"},
+      legend:{position:"right" as const},
       datalabels:{
         color:"#111",
-        formatter:(v:number,ctx:{chart:ChartJS})=>{
+        formatter:(v:number,ctx)=>{
           const total=(ctx.chart.data.datasets[0].data as number[]).reduce((a,b)=>a+b,0);
-          const pct=((v/total)*100).toFixed(1)+"%";
-          return `${pct}`;
+          return `${((v/total)*100).toFixed(1)}%`;
         }
       }
     }
